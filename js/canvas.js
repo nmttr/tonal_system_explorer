@@ -51,46 +51,60 @@ function writePointsOfChordId(cv, ctx, location, chordId, freqs){
     ctx.closePath()
     ctx.stroke()
 
-    ctx.fillText(String(f.gen), start+delta*f.get(), center);
+    ctx.fillText(String(f.name), start+delta*f.get(), center);
   });
   ctx.restore()
 }
 
-function makeChord(g, fn, bn, frp){
+function makeChord(g, fn, bn, ml, frp){
   let cAr = Array.from(
     {length: fn + bn + 2},
     (_, i) => i - bn - 1
   );
 
   let cOb = new Object();
-  // every member of cAr should be an Object
-  cAr.forEach((i) =>
+  // every member of cOb should be an Object
+  cAr.forEach((i) => {
     cOb[i] = [
       {
-        gen: i,
+        name: i,
         get: () => frp( i*g )
       }, 
       {
-        gen: i+1,
+        name: i+1,
         get: () => frp( (i+1)*g )
       },
       {
-        gen: i+cAr.length,
+        name: i+cAr.length,
         get: () => frp( (i+cAr.length)*g )
       }
-    ]
-  );
+    ];
+
+    ml.forEach( (elem, j) => {
+      // console.log([i, g, elem.get(), j])
+      if(elem.display){
+        cOb[i].push(
+          {
+            name: "M" + String(j),
+            get: () => { return frp( i*g + elem.get() ) }
+          }
+        );
+      }
+    });
+
+    // cOb[i].forEach((e) => console.log([e.name, e.get()]));
+  });
 
   return [cAr, cOb]
 }
 
-export function configureCanvas(canvas, gen, fcn, bcn, frp){
+export function configureCanvas(canvas, gen, fcn, bcn, mkl, frp){
   // console.log(gen);
   // console.log(fcn);
 
   const context = canvas.getContext('2d');
 
-  let [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, frp);
+  let [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, mkl, frp);
 
   // console.log(chordIdArray)
   // console.log(chordObject)

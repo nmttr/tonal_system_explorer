@@ -32,7 +32,7 @@ function makeSliderObject(sliderId, min, max, value, step, label, Misc){
   afterLabel.innerText = Slider.value
   form.appendChild(afterLabel);
   
-  let cv = (ev) => {
+  let cv = () => {
     afterLabel.innerText = Slider.value
   }
   return {changeVal: cv, element: form, slider: Slider}
@@ -69,7 +69,7 @@ function init(Misc){
     "GeneratorSlider",
     0,
     1,
-    0.5800,
+    0.5850,
     0.0025,
     "Generator: ",
     Misc
@@ -116,23 +116,19 @@ function init(Misc){
 
   BcnForm.appendChild(BackwardChordNumber);
 
-  const ButtonsForm = document.createElement("form")
-  MainInputsDiv.appendChild(ButtonsForm)
+  const ButtonsForm = document.createElement("form");
+  MainInputsDiv.appendChild(ButtonsForm);
 
-  // make AddMarkerButton and DeleteMarkerButton
+  // make AddMarkerButton
   const AddMarkerButton = document.createElement("input");
   Misc.setAttributesByObject(AddMarkerButton, {
     "type": "button",
     "value": "add marker"
   });
-  ButtonsForm.appendChild(AddMarkerButton)
+  ButtonsForm.appendChild(AddMarkerButton);
 
-  const DeleteMarkerButton = document.createElement("input");
-  Misc.setAttributesByObject(DeleteMarkerButton, {
-    "type": "button",
-    "value": "delete marker"
-  });
-  ButtonsForm.appendChild(DeleteMarkerButton)
+  // make MarkerList
+  let MarkerList = new Array();
 
   // make canvas
   const MainCanvas = document.createElement("canvas");
@@ -144,45 +140,90 @@ function init(Misc){
 
   // use canvas.js module for changing MainCanvas
   import("./canvas.js").then( (module) => {
-    module.configureCanvas(
-      MainCanvas,
-      GeneratorSliderObject.slider.value,
-      parseInt(ForwardChordNumber.value),
-      parseInt(BackwardChordNumber.value),
-      Misc.fractionPart
-    );
-
-    GeneratorSliderObject.slider.oninput = (ev) =>{
-      // console.log(genOb.slider.value);
-      GeneratorSliderObject.changeVal(ev);
-
+    // wrapping to make edit easy
+    function refresh(){
       module.configureCanvas(
         MainCanvas,
-        GeneratorSliderObject.slider.value,
+        Number(GeneratorSliderObject.slider.value),
         parseInt(ForwardChordNumber.value),
         parseInt(BackwardChordNumber.value),
+        MarkerList,
         Misc.fractionPart
       );
+    };
+    refresh();
+
+    GeneratorSliderObject.slider.oninput = (ev) =>{
+      GeneratorSliderObject.changeVal();
+
+      refresh();
     };
  
     ForwardChordNumber.onchange = (ev) =>{
-      module.configureCanvas(
-        MainCanvas,
-        GeneratorSliderObject.slider.value,
-        parseInt(ForwardChordNumber.value),
-        parseInt(BackwardChordNumber.value),
-        Misc.fractionPart
-      );
+      refresh();
     };
 
     BackwardChordNumber.onchange = (ev) =>{
-      module.configureCanvas(
-        MainCanvas,
-        GeneratorSliderObject.slider.value,
-        parseInt(ForwardChordNumber.value),
-        parseInt(BackwardChordNumber.value),
-        Misc.fractionPart
+      refresh();
+    };
+
+    AddMarkerButton.onclick = (ev) => {
+      let markerId = MarkerList.findIndex( 
+        (elem) => elem.display === false
       );
+
+      // console.log(markerId)
+      if(markerId === -1){ 
+        markerId = MarkerList.length
+
+        let MarkerSliderObject = makeSliderObject(
+          "MarkerSlider" + String(markerId),
+          0,
+          1,
+          0.2500,
+          0.0025,
+          "Marker" + String(markerId) + ": ",
+          Misc
+        ); 
+
+        let DeleteMarkerButton = document.createElement("input");
+        Misc.setAttributesByObject(DeleteMarkerButton, {
+          "type": "button",
+          "value": "delete this"
+        });
+        MarkerSliderObject.element.appendChild(DeleteMarkerButton);
+
+        MarkersDiv.appendChild(MarkerSliderObject.element)
+        MarkerList.push(
+          {
+            display: true,
+            get: () => Number(MarkerSliderObject.slider.value)
+          }
+        )
+
+        refresh();
+  
+        MarkerSliderObject.slider.oninput = (ev) =>{
+          MarkerSliderObject.changeVal();
+
+          refresh();
+        };
+
+        DeleteMarkerButton.onclick = (ev) => {
+          // actually set display: none in form CSS
+          MarkerList[markerId].display = false
+          MarkerSliderObject.element.style = "display: none; ";    
+
+          refresh();
+        };
+      }else{
+        MarkerList[markerId].display = true
+        document.getElementById("MarkerSlider" + String(markerId)).parentNode.style = "";    
+
+        refresh();
+      }
+
+      // console.log(MarkerList)
     };
   });
 }
