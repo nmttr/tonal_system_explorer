@@ -28,8 +28,8 @@ function writeCanvas(cv, cvCtx, cAr, cOb){
 }
 
 function writePointsOfChordId(cv, ctx, location, chordId, freqs){
-  let upperBound = window.innerHeight*(4*location+1)/(4*division)
-  let lowerBound = window.innerHeight*(4*location+3)/(4*division)
+  // let upperBound = window.innerHeight*(4*location+1)/(4*division)
+  // let lowerBound = window.innerHeight*(4*location+3)/(4*division)
   let center = window.innerHeight*(2*location+1)/(2*division)
 
   let start = cv.width/8
@@ -40,9 +40,20 @@ function writePointsOfChordId(cv, ctx, location, chordId, freqs){
   ctx.font = "20px serif";
   ctx.fillText(String(chordId), start/2, center);
 
-  for(let i=0; i<freqs.length; i++){
-    ctx.fillText(String(freqs[i].gen), start+delta*freqs[i].get(), center);
-  }
+  ctx.save()
+  ctx.strokeStyle = `rgba(0 0 0 / 0.25)`
+  freqs.forEach( (f) => {
+    let temp = start+delta*f.get()
+
+    ctx.beginPath()
+    ctx.moveTo(temp, 0)
+    ctx.lineTo(temp, cv.height)
+    ctx.closePath()
+    ctx.stroke()
+
+    ctx.fillText(String(f.gen), start+delta*f.get(), center);
+  });
+  ctx.restore()
 }
 
 function makeChord(g, fn, bn, frp){
