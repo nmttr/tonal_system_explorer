@@ -8,11 +8,11 @@ function makeSliderObject(sliderId, min, max, value, step, label, Misc){
       "type": "range",
       "min": min,
       "max": max,
-      "value": value,
       "step": step,
       "style": "width: " + String(window.innerWidth/2) + "px;"
     }
   );
+  Slider.value = value.
 
   // before Slider append label for it
   let beforeLabel = document.createElement("label")
