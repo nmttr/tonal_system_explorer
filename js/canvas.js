@@ -1,6 +1,6 @@
 const division = 16
 
-function initCanvas(cv, cvCtx, cAr, cOb){
+function writeCanvas(cv, cvCtx, cAr, cOb){
   // console.log(cvCtx);
   // console.log([window.innerWidth, window.innerHeight])
   // console.log(cAr.length)
@@ -35,7 +35,7 @@ function writePointsOfChordId(cv, ctx, location, chordId, freqs){
   let start = cv.width/8
   let delta = cv.width*3/4
 
-  ctx.clearRect(0, upperBound, ctx.canvas.width, lowerBound-upperBound)
+  // ctx.clearRect(0, upperBound, ctx.canvas.width, lowerBound-upperBound)
 
   ctx.font = "20px serif";
   ctx.fillText(String(chordId), start/2, center);
@@ -45,11 +45,7 @@ function writePointsOfChordId(cv, ctx, location, chordId, freqs){
   }
 }
 
-function makeChord(g, f, b, frp){
-  // these are not a number but a string!
-  let fn = parseInt(f.value);
-  let bn = parseInt(b.value);
-
+function makeChord(g, fn, bn, frp){
   let cAr = Array.from(
     {length: fn + bn + 2},
     (_, i) => i - bn - 1
@@ -61,15 +57,15 @@ function makeChord(g, f, b, frp){
     cOb[i] = [
       {
         gen: i,
-        get: () => frp( i*g.value )
+        get: () => frp( i*g )
       }, 
       {
         gen: i+1,
-        get: () => frp( (i+1)*g.value )
+        get: () => frp( (i+1)*g )
       },
       {
         gen: i+cAr.length,
-        get: () => frp( (i+cAr.length)*g.value )
+        get: () => frp( (i+cAr.length)*g )
       }
     ]
   );
@@ -77,37 +73,17 @@ function makeChord(g, f, b, frp){
   return [cAr, cOb]
 }
 
-export function configureCanvas(canvas, genOb, fcn, bcn, frp){
-  // console.log(genOb);
+export function configureCanvas(canvas, gen, fcn, bcn, frp){
+  // console.log(gen);
   // console.log(fcn);
-  // console.log(Misc);
 
   const context = canvas.getContext('2d');
 
-  let [chordIdArray, chordObject] = makeChord(genOb.slider, fcn, bcn, frp);
+  let [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, frp);
 
-  console.log(chordIdArray)
-  console.log(chordObject)
+  // console.log(chordIdArray)
+  // console.log(chordObject)
 
-  initCanvas(canvas, context, chordIdArray, chordObject);
-  console.log(context);
-
-  genOb.slider.oninput = (ev) =>{
-    // console.log(genOb.slider.value);
-    genOb.changeVal(ev);
-
-    initCanvas(canvas, context, chordIdArray, chordObject);
-  }
-
-  fcn.onchange = (ev) =>{
-    [chordIdArray, chordObject] = makeChord(genOb.slider, fcn, bcn, frp);
-
-    initCanvas(canvas, context, chordIdArray, chordObject);
-  }
-
-  bcn.onchange = (ev) =>{
-    [chordIdArray, chordObject] = makeChord(genOb.slider, fcn, bcn, frp);
-
-    initCanvas(canvas, context, chordIdArray, chordObject);
-  }
+  writeCanvas(canvas, context, chordIdArray, chordObject);
+  // console.log(context);
 }

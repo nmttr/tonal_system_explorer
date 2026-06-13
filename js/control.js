@@ -12,7 +12,7 @@ function makeSliderObject(sliderId, min, max, value, step, label, Misc){
       "style": "width: " + String(window.innerWidth/2) + "px;"
     }
   );
-  Slider.value = value
+  Slider.value = value;
 
   // before Slider append label for it
   let beforeLabel = document.createElement("label")
@@ -146,11 +146,44 @@ function init(Misc){
   import("./canvas.js").then( (module) => {
     module.configureCanvas(
       MainCanvas,
-      GeneratorSliderObject,
-      ForwardChordNumber,
-      BackwardChordNumber,
+      GeneratorSliderObject.slider.value,
+      parseInt(ForwardChordNumber.value),
+      parseInt(BackwardChordNumber.value),
       Misc.fractionPart
     );
+
+    GeneratorSliderObject.slider.oninput = (ev) =>{
+      // console.log(genOb.slider.value);
+      GeneratorSliderObject.changeVal(ev);
+
+      module.configureCanvas(
+        MainCanvas,
+        GeneratorSliderObject.slider.value,
+        parseInt(ForwardChordNumber.value),
+        parseInt(BackwardChordNumber.value),
+        Misc.fractionPart
+      );
+    };
+ 
+    ForwardChordNumber.onchange = (ev) =>{
+      module.configureCanvas(
+        MainCanvas,
+        GeneratorSliderObject.slider.value,
+        parseInt(ForwardChordNumber.value),
+        parseInt(BackwardChordNumber.value),
+        Misc.fractionPart
+      );
+    };
+
+    BackwardChordNumber.onchange = (ev) =>{
+      module.configureCanvas(
+        MainCanvas,
+        GeneratorSliderObject.slider.value,
+        parseInt(ForwardChordNumber.value),
+        parseInt(BackwardChordNumber.value),
+        Misc.fractionPart
+      );
+    };
   });
 }
 
