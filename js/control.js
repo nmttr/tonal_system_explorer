@@ -140,10 +140,13 @@ function init(Misc){
 
   // use canvas.js module for changing MainCanvas
   import("./canvas.js").then( (module) => {
+    module.initCanvas(
+      MainCanvas
+    );
+
     // wrapping to make edit easy
     function refresh(){
-      module.configureCanvas(
-        MainCanvas,
+      module.configureChord(
         Number(GeneratorSliderObject.slider.value),
         parseInt(ForwardChordNumber.value),
         parseInt(BackwardChordNumber.value),

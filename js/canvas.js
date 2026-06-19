@@ -1,59 +1,60 @@
 const division = 16
 
-function writeCanvas(cv, cvCtx, cAr, cOb){
-  // console.log(cvCtx);
-  // console.log([window.innerWidth, window.innerHeight])
-  // console.log(cAr.length)
+let canvas = null;
+let context = null;
+let chordIdArray = null;
+let chordObject = null;
 
-  cv.width = window.innerWidth*3/4;
-  cv.height = window.innerHeight*cAr.length/division;
+function writeCanvas(){
+  canvas.width = window.innerWidth*3/4;
+  canvas.height = window.innerHeight*chordIdArray.length/division;
 
-  cvCtx.reset();
+  context.reset();
 
-  cvCtx.beginPath();
-  cvCtx.moveTo(cv.width/8, 0);
-  cvCtx.lineTo(cv.width/8, cv.height);  
-  cvCtx.closePath();
-  cvCtx.stroke();
+  context.beginPath();
+  context.moveTo(canvas.width/8, 0);
+  context.lineTo(canvas.width/8, canvas.height);  
+  context.closePath();
+  context.stroke();
 
-  cvCtx.beginPath();
-  cvCtx.moveTo(cv.width*7/8, 0);
-  cvCtx.lineTo(cv.width*7/8, cv.height);  
-  cvCtx.closePath();
-  cvCtx.stroke();
+  context.beginPath();
+  context.moveTo(canvas.width*7/8, 0);
+  context.lineTo(canvas.width*7/8, canvas.height);  
+  context.closePath();
+  context.stroke();
 
-  for(let i=0; i<cAr.length; i++){
-    writePointsOfChordId(cv, cvCtx, i, cAr[i], cOb[cAr[i]]);
+  for(let i=0; i<chordIdArray.length; i++){
+    writePointsOfChordId(i, chordIdArray[i], chordObject[chordIdArray[i]]);
   }
 }
 
-function writePointsOfChordId(cv, ctx, location, chordId, freqs){
+function writePointsOfChordId(location, chordId, freqs){
   // let upperBound = window.innerHeight*(4*location+1)/(4*division)
   // let lowerBound = window.innerHeight*(4*location+3)/(4*division)
   let center = window.innerHeight*(2*location+1)/(2*division)
 
-  let start = cv.width/8
-  let delta = cv.width*3/4
+  let start = canvas.width/8
+  let delta = canvas.width*3/4
 
-  // ctx.clearRect(0, upperBound, ctx.canvas.width, lowerBound-upperBound)
+  // ctx.clearRect(0, upperBound, canvas.width, lowerBound-upperBound)
 
-  ctx.font = "20px serif";
-  ctx.fillText(String(chordId), start/2, center);
+  context.font = "20px serif";
+  context.fillText(String(chordId), start/2, center);
 
-  ctx.save()
-  ctx.strokeStyle = `rgba(0 0 0 / 0.25)`
+  context.save()
+  context.strokeStyle = `rgba(0 0 0 / 0.25)`
   freqs.forEach( (f) => {
     let temp = start+delta*f.get()
 
-    ctx.beginPath()
-    ctx.moveTo(temp, 0)
-    ctx.lineTo(temp, cv.height)
-    ctx.closePath()
-    ctx.stroke()
+    context.beginPath()
+    context.moveTo(temp, 0)
+    context.lineTo(temp, canvas.height)
+    context.closePath()
+    context.stroke()
 
-    ctx.fillText(String(f.name), start+delta*f.get(), center);
+    context.fillText(String(f.name), start+delta*f.get(), center);
   });
-  ctx.restore()
+  context.restore()
 }
 
 function makeChord(g, fn, bn, ml, frp){
@@ -98,17 +99,20 @@ function makeChord(g, fn, bn, ml, frp){
   return [cAr, cOb]
 }
 
-export function configureCanvas(canvas, gen, fcn, bcn, mkl, frp){
+export function configureChord(gen, fcn, bcn, mkl, frp){
   // console.log(gen);
   // console.log(fcn);
 
-  const context = canvas.getContext('2d');
-
-  let [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, mkl, frp);
+  [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, mkl, frp);
 
   // console.log(chordIdArray)
   // console.log(chordObject)
 
-  writeCanvas(canvas, context, chordIdArray, chordObject);
+  writeCanvas();
   // console.log(context);
+}
+
+export function initCanvas(cv){
+  canvas = cv
+  context = cv.getContext('2d');
 }
