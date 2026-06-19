@@ -153,12 +153,17 @@ function init(Misc){
     }
     confChord();
 
-    function refresh(){
+    function refresh(event=null){
       module.writeCanvas(
-        Number(GeneratorSliderObject.slider.value)
+        Number(GeneratorSliderObject.slider.value),
+        event
       );
     };
-    refresh()
+    refresh();
+
+    MainCanvas.onmousemove = (ev) => {
+      refresh(ev);
+    }
 
     GeneratorSliderObject.slider.oninput = (ev) =>{
       GeneratorSliderObject.changeVal();

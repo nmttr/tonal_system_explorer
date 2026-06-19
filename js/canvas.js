@@ -5,55 +5,114 @@ let context = null;
 let chordIdArray = null;
 let chordObject = null;
 
-export function writeCanvas(gen){
+export function writeCanvas(gen, mouseMoveEvent=null){
   canvas.width = window.innerWidth*3/4;
   canvas.height = window.innerHeight*chordIdArray.length/division;
 
+  const start = canvas.width/8
+  const end = canvas.width*7/8
+  const delta = canvas.width*3/4
+
   context.reset();
 
-  context.beginPath();
-  context.moveTo(canvas.width/8, 0);
-  context.lineTo(canvas.width/8, canvas.height);  
-  context.closePath();
-  context.stroke();
+  if(mouseMoveEvent!==null){
+    // console.log(mouseMoveEvent);
 
-  context.beginPath();
-  context.moveTo(canvas.width*7/8, 0);
-  context.lineTo(canvas.width*7/8, canvas.height);  
-  context.closePath();
-  context.stroke();
+    const xco = mouseMoveEvent.clientX;
+    const yco = mouseMoveEvent.clientY;
 
-  for(let i=0; i<chordIdArray.length; i++){
-    writePointsOfChordId(gen, i, chordIdArray[i], chordObject[chordIdArray[i]]);
+    const indexNearMouse = Math.floor(division/window.innerHeight*yco)
+
+    context.save();
+    context.fillStyle = `rgb(255,0,0,0.5)`;
+
+    let temp = window.innerHeight*indexNearMouse/division
+    if(8*xco <= canvas.width || 7*canvas.width <= 8*xco){
+      context.fillRect(
+        0, temp,
+        canvas.width/8, window.innerHeight/division
+      );
+
+      context.fillRect(
+        canvas.width*7/8, temp,
+        canvas.width/8, window.innerHeight/division
+      );
+    }else if(indexNearMouse < chordIdArray.length){
+      let left = start
+      let right = canvas.width*7/8
+      let minv = right
+      let maxv = left
+
+      chordObject[chordIdArray[indexNearMouse]].forEach( (f) => {
+        let temp = start+delta*f.get(gen)
+
+        // if(mouseMoveEvent.buttons==1){ console.log([left, temp, xco, right]); }
+
+        if(left < temp && temp <= xco){ left = temp }
+        if(xco < temp && temp < right){ right = temp }
+
+        if(temp < minv) { minv = temp }
+        if(maxv < temp) { maxv = temp }
+      });
+
+      // if(mouseMoveEvent.buttons==1){ console.log([left, right]); }
+
+      context.fillRect(
+        left, temp,
+        right-left, window.innerHeight/division
+      );
+
+      if(left < minv){
+        context.fillRect(
+          maxv, temp,
+          canvas.width*7/8-maxv, window.innerHeight/division
+        );
+      }
+      if(maxv < right){
+        context.fillRect(
+          start, temp,
+          minv-start, window.innerHeight/division
+        );
+      }
+    }
+    context.restore();
   }
-}
 
-function writePointsOfChordId(gen, location, chordId, freqs){
-  // let upperBound = window.innerHeight*(4*location+1)/(4*division)
-  // let lowerBound = window.innerHeight*(4*location+3)/(4*division)
-  let center = window.innerHeight*(2*location+1)/(2*division)
+  context.beginPath();
+  context.moveTo(start, 0);
+  context.lineTo(start, canvas.height);  
+  context.closePath();
+  context.stroke();
 
-  let start = canvas.width/8
-  let delta = canvas.width*3/4
-
-  // ctx.clearRect(0, upperBound, canvas.width, lowerBound-upperBound)
-
-  context.font = "20px serif";
-  context.fillText(String(chordId), start/2, center);
+  context.beginPath();
+  context.moveTo(end, 0);
+  context.lineTo(end, canvas.height);  
+  context.closePath();
+  context.stroke();
 
   context.save()
+  context.font = "20px serif";
   context.strokeStyle = `rgba(0 0 0 / 0.25)`
-  freqs.forEach( (f) => {
-    let temp = start+delta*f.get(gen)
 
-    context.beginPath()
-    context.moveTo(temp, 0)
-    context.lineTo(temp, canvas.height)
-    context.closePath()
-    context.stroke()
+  for(let i=0; i<chordIdArray.length; i++){
+    // writePointsOfChordId(gen, i, chordIdArray[i], chordObject[chordIdArray[i]]);
 
-    context.fillText(String(f.name), temp, center);
-  });
+    let center = window.innerHeight*(2*i+1)/(2*division)
+
+    context.fillText(String(chordIdArray[i]), start/2, center);
+
+    chordObject[chordIdArray[i]].forEach( (f) => {
+      let temp = start+delta*f.get(gen)
+
+      context.beginPath()
+      context.moveTo(temp, 0)
+      context.lineTo(temp, canvas.height)
+      context.closePath()
+      context.stroke()
+
+      context.fillText(String(f.name), temp, center);
+    });
+  }
   context.restore()
 }
 
