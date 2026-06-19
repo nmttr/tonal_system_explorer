@@ -161,6 +161,22 @@ function init(Misc){
     };
     refresh();
 
+    window.onresize = (ev) => {
+      Misc.setAttributesByObject(GeneratorSliderObject.slider, {
+        "style": "width: " + String(window.innerWidth/2) + "px;"
+      });
+
+      MarkerList.forEach( (O) => {
+        if(O.display){
+          Misc.setAttributesByObject(O.slider, {
+            "style": "width: " + String(window.innerWidth/2) + "px;"
+          });
+        }
+      });
+
+      refresh();
+    }
+
     MainCanvas.onmousemove = (ev) => {
       refresh(ev);
     }
@@ -211,7 +227,8 @@ function init(Misc){
         MarkerList.push(
           {
             display: true,
-            get: () => Number(MarkerSliderObject.slider.value)
+            get: () => Number(MarkerSliderObject.slider.value),
+            slider: MarkerSliderObject.slider
           }
         )
 
