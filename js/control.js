@@ -140,21 +140,25 @@ function init(Misc){
 
   // use canvas.js module for changing MainCanvas
   import("./canvas.js").then( (module) => {
-    module.initCanvas(
-      MainCanvas
-    );
+    module.initCanvas(MainCanvas);
 
     // wrapping to make edit easy
-    function refresh(){
+    function confChord(){
       module.configureChord(
-        Number(GeneratorSliderObject.slider.value),
         parseInt(ForwardChordNumber.value),
         parseInt(BackwardChordNumber.value),
         MarkerList,
         Misc.fractionPart
       );
+    }
+    confChord();
+
+    function refresh(){
+      module.writeCanvas(
+        Number(GeneratorSliderObject.slider.value)
+      );
     };
-    refresh();
+    refresh()
 
     GeneratorSliderObject.slider.oninput = (ev) =>{
       GeneratorSliderObject.changeVal();
@@ -163,10 +167,12 @@ function init(Misc){
     };
  
     ForwardChordNumber.onchange = (ev) =>{
+      confChord();
       refresh();
     };
 
     BackwardChordNumber.onchange = (ev) =>{
+      confChord();
       refresh();
     };
 
@@ -204,6 +210,7 @@ function init(Misc){
           }
         )
 
+        confChord();
         refresh();
   
         MarkerSliderObject.slider.oninput = (ev) =>{
@@ -217,12 +224,14 @@ function init(Misc){
           MarkerList[markerId].display = false
           MarkerSliderObject.element.style = "display: none; ";    
 
+          confChord();
           refresh();
         };
       }else{
         MarkerList[markerId].display = true
         document.getElementById("MarkerSlider" + String(markerId)).parentNode.style = "";    
 
+        confChord();
         refresh();
       }
 

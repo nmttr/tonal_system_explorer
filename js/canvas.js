@@ -5,7 +5,7 @@ let context = null;
 let chordIdArray = null;
 let chordObject = null;
 
-function writeCanvas(){
+export function writeCanvas(gen){
   canvas.width = window.innerWidth*3/4;
   canvas.height = window.innerHeight*chordIdArray.length/division;
 
@@ -24,11 +24,11 @@ function writeCanvas(){
   context.stroke();
 
   for(let i=0; i<chordIdArray.length; i++){
-    writePointsOfChordId(i, chordIdArray[i], chordObject[chordIdArray[i]]);
+    writePointsOfChordId(gen, i, chordIdArray[i], chordObject[chordIdArray[i]]);
   }
 }
 
-function writePointsOfChordId(location, chordId, freqs){
+function writePointsOfChordId(gen, location, chordId, freqs){
   // let upperBound = window.innerHeight*(4*location+1)/(4*division)
   // let lowerBound = window.innerHeight*(4*location+3)/(4*division)
   let center = window.innerHeight*(2*location+1)/(2*division)
@@ -44,7 +44,7 @@ function writePointsOfChordId(location, chordId, freqs){
   context.save()
   context.strokeStyle = `rgba(0 0 0 / 0.25)`
   freqs.forEach( (f) => {
-    let temp = start+delta*f.get()
+    let temp = start+delta*f.get(gen)
 
     context.beginPath()
     context.moveTo(temp, 0)
@@ -52,12 +52,12 @@ function writePointsOfChordId(location, chordId, freqs){
     context.closePath()
     context.stroke()
 
-    context.fillText(String(f.name), start+delta*f.get(), center);
+    context.fillText(String(f.name), temp, center);
   });
   context.restore()
 }
 
-function makeChord(g, fn, bn, ml, frp){
+export function configureChord(fn, bn, ml, frp){
   let cAr = Array.from(
     {length: fn + bn + 2},
     (_, i) => i - bn - 1
@@ -69,15 +69,15 @@ function makeChord(g, fn, bn, ml, frp){
     cOb[i] = [
       {
         name: i,
-        get: () => frp( i*g )
+        get: (g) => frp( i*g )
       }, 
       {
         name: i+1,
-        get: () => frp( (i+1)*g )
+        get: (g) => frp( (i+1)*g )
       },
       {
         name: i+cAr.length,
-        get: () => frp( (i+cAr.length)*g )
+        get: (g) => frp( (i+cAr.length)*g )
       }
     ];
 
@@ -87,7 +87,7 @@ function makeChord(g, fn, bn, ml, frp){
         cOb[i].push(
           {
             name: "M" + String(j),
-            get: () => { return frp( i*g + elem.get() ) }
+            get: (g) => { return frp( i*g + elem.get() ) }
           }
         );
       }
@@ -96,23 +96,10 @@ function makeChord(g, fn, bn, ml, frp){
     // cOb[i].forEach((e) => console.log([e.name, e.get()]));
   });
 
-  return [cAr, cOb]
-}
-
-export function configureChord(gen, fcn, bcn, mkl, frp){
-  // console.log(gen);
-  // console.log(fcn);
-
-  [chordIdArray, chordObject] = makeChord(gen, fcn, bcn, mkl, frp);
-
-  // console.log(chordIdArray)
-  // console.log(chordObject)
-
-  writeCanvas();
-  // console.log(context);
+  [chordIdArray, chordObject] = [cAr, cOb]
 }
 
 export function initCanvas(cv){
-  canvas = cv
+  canvas = cv;
   context = cv.getContext('2d');
 }
