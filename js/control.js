@@ -38,11 +38,15 @@ function makeSliderObject(sliderId, min, max, value, step, label, Misc){
   return {changeVal: cv, element: form, slider: Slider}
 }
 
-function init(Misc){
+async function main(){
   // console.log(Misc);
 
   // temporary variable
   let temp = 0;
+
+  // dynamic import for modules
+  const Misc = await import("./misc.js");
+  const CanvasMod = await import("./canvas.js");
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
@@ -139,137 +143,125 @@ function init(Misc){
   MainVisualsDiv.appendChild(MainCanvas);
 
   // use canvas.js module for changing MainCanvas
-  import("./canvas.js").then( (module) => {
-    module.initCanvas(MainCanvas);
+  CanvasMod.initCanvas(MainCanvas);
 
-    // wrapping to make edit easy
-    function confChord(){
-      module.configureChord(
-        parseInt(ForwardChordNumber.value),
-        parseInt(BackwardChordNumber.value),
-        MarkerList,
-        Misc.fractionPart
-      );
-    }
-    confChord();
+  // wrapping to make edit easy
+  function confChord(){
+    CanvasMod.configureChord(
+      parseInt(ForwardChordNumber.value),
+      parseInt(BackwardChordNumber.value),
+      MarkerList,
+      Misc.fractionPart
+    );
+  }
+  confChord();
 
-    function refresh(event=null){
-      module.writeCanvas(
-        Number(GeneratorSliderObject.slider.value),
-        event
-      );
-    };
-    refresh();
+  function refresh(event=null){
+    CanvasMod.writeCanvas(
+      Number(GeneratorSliderObject.slider.value),
+      event
+    );
+  };
+  refresh();
 
-    window.onresize = (ev) => {
-      Misc.setAttributesByObject(GeneratorSliderObject.slider, {
-        "style": "width: " + String(window.innerWidth/2) + "px;"
-      });
+  window.onresize = (ev) => {
+    Misc.setAttributesByObject(GeneratorSliderObject.slider, {
+      "style": "width: " + String(window.innerWidth/2) + "px;"
+    });
 
-      MarkerList.forEach( (O) => {
-        if(O.display){
-          Misc.setAttributesByObject(O.slider, {
-            "style": "width: " + String(window.innerWidth/2) + "px;"
-          });
-        }
-      });
-
-      refresh();
-    }
-
-    MainCanvas.onmousemove = (ev) => {
-      refresh(ev);
-    }
-
-    GeneratorSliderObject.slider.oninput = (ev) =>{
-      GeneratorSliderObject.changeVal();
-
-      refresh();
-    };
- 
-    ForwardChordNumber.onchange = (ev) =>{
-      confChord();
-      refresh();
-    };
-
-    BackwardChordNumber.onchange = (ev) =>{
-      confChord();
-      refresh();
-    };
-
-    AddMarkerButton.onclick = (ev) => {
-      let markerId = MarkerList.findIndex( 
-        (elem) => elem.display === false
-      );
-
-      // console.log(markerId)
-      if(markerId === -1){ 
-        markerId = MarkerList.length
-
-        let MarkerSliderObject = makeSliderObject(
-          "MarkerSlider" + String(markerId),
-          0,
-          1,
-          0.2500,
-          0.0025,
-          "Marker" + String(markerId) + ": ",
-          Misc
-        ); 
-
-        let DeleteMarkerButton = document.createElement("input");
-        Misc.setAttributesByObject(DeleteMarkerButton, {
-          "type": "button",
-          "value": "delete this"
+    MarkerList.forEach( (O) => {
+      if(O.display){
+        Misc.setAttributesByObject(O.slider, {
+          "style": "width: " + String(window.innerWidth/2) + "px;"
         });
-        MarkerSliderObject.element.appendChild(DeleteMarkerButton);
-
-        MarkersDiv.appendChild(MarkerSliderObject.element)
-        MarkerList.push(
-          {
-            display: true,
-            get: () => Number(MarkerSliderObject.slider.value),
-            slider: MarkerSliderObject.slider
-          }
-        )
-
-        confChord();
-        refresh();
-  
-        MarkerSliderObject.slider.oninput = (ev) =>{
-          MarkerSliderObject.changeVal();
-
-          refresh();
-        };
-
-        DeleteMarkerButton.onclick = (ev) => {
-          // actually set display: none in form CSS
-          MarkerList[markerId].display = false
-          MarkerSliderObject.element.style = "display: none; ";    
-
-          confChord();
-          refresh();
-        };
-      }else{
-        MarkerList[markerId].display = true
-        document.getElementById("MarkerSlider" + String(markerId)).parentNode.style = "";    
-
-        confChord();
-        refresh();
       }
+    });
 
-      // console.log(MarkerList)
-    };
-  });
-}
+    refresh();
+  }
 
-function main(){
-  // console.log("start to execute main");
+  MainCanvas.onmousemove = (ev) => {
+    refresh(ev);
+  }
 
-  import("./misc.js").then( (module) => {
-    init(module);
-  });
+  GeneratorSliderObject.slider.oninput = (ev) =>{
+    GeneratorSliderObject.changeVal();
 
-  // console.log("end executing main")
+    refresh();
+  };
+ 
+  ForwardChordNumber.onchange = (ev) =>{
+    confChord();
+    refresh();
+  };
+
+  BackwardChordNumber.onchange = (ev) =>{
+    confChord();
+    refresh();
+  };
+
+  AddMarkerButton.onclick = (ev) => {
+    let markerId = MarkerList.findIndex( 
+      (elem) => elem.display === false
+    );
+
+    // console.log(markerId)
+    if(markerId === -1){ 
+      markerId = MarkerList.length
+
+      let MarkerSliderObject = makeSliderObject(
+        "MarkerSlider" + String(markerId),
+        0,
+        1,
+        0.2500,
+        0.0025,
+        "Marker" + String(markerId) + ": ",
+        Misc
+      ); 
+
+      let DeleteMarkerButton = document.createElement("input");
+      Misc.setAttributesByObject(DeleteMarkerButton, {
+        "type": "button",
+        "value": "delete this"
+      });
+      MarkerSliderObject.element.appendChild(DeleteMarkerButton);
+
+      MarkersDiv.appendChild(MarkerSliderObject.element);
+      MarkerList.push(
+        {
+          display: true,
+          get: () => Number(MarkerSliderObject.slider.value),
+          slider: MarkerSliderObject.slider
+        }
+      );
+
+      confChord();
+      refresh();
+  
+      MarkerSliderObject.slider.oninput = (ev) =>{
+        MarkerSliderObject.changeVal();
+
+        refresh();
+      };
+
+      DeleteMarkerButton.onclick = (ev) => {
+        // actually set display: none in form CSS
+        MarkerList[markerId].display = false
+        MarkerSliderObject.element.style = "display: none; ";    
+
+        confChord();
+        refresh();
+      };
+    }else{
+      MarkerList[markerId].display = true
+      document.getElementById("MarkerSlider" + String(markerId)).parentNode.style = "";    
+
+      confChord();
+      refresh();
+    }
+
+    // console.log(MarkerList)
+  };
 }
 
 addEventListener("load", main);
