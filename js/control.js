@@ -227,7 +227,8 @@ async function main(){
       MarkerList.push(
         {
           display: true,
-          get: () => MarkerSliderObject.get()
+          get: MarkerSliderObject.get,
+          resize: MarkerSliderObject.resize
         }
       );
 
