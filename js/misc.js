@@ -48,7 +48,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   }
 
   let rsz = () => {
-    Misc.setAttributesByObject(slider, {
+    setAttributesByObject(slider, {
       "style": "width: " + String(window.innerWidth/2) + "px;"
     });
   }
