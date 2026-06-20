@@ -1,43 +1,3 @@
-function makeSliderObject(sliderId, min, max, value, step, label, Misc){
-  const form = document.createElement("form")
-
-  const Slider = document.createElement("input");
-  Misc.setAttributesByObject(Slider, 
-    {
-      "id": sliderId,
-      "type": "range",
-      "min": min,
-      "max": max,
-      "step": step,
-      "style": "width: " + String(window.innerWidth/2) + "px;"
-    }
-  );
-  Slider.value = value;
-
-  // before Slider append label for it
-  let beforeLabel = document.createElement("label")
-  Misc.setAttributesByObject(beforeLabel, {
-    "for": Slider.id
-  });
-  beforeLabel.innerText = label
-  form.appendChild(beforeLabel);
-
-  form.appendChild(Slider);
-
-  // after Slider append value for it
-  let afterLabel = document.createElement("label");
-  Misc.setAttributesByObject(afterLabel, {
-    "for": Slider.id
-  });
-  afterLabel.innerText = Slider.value
-  form.appendChild(afterLabel);
-  
-  let cv = () => {
-    afterLabel.innerText = Slider.value
-  }
-  return {changeVal: cv, element: form, slider: Slider}
-}
-
 async function main(){
   // console.log(Misc);
 
@@ -71,56 +31,31 @@ async function main(){
   HomeDiv.appendChild(MainInputsDiv);
   HomeDiv.appendChild(MarkersDiv);
 
-  const GeneratorSliderObject = makeSliderObject(
+  const GeneratorSliderObject = Misc.makeSliderObject(
     "GeneratorSlider",
     0,
     1,
     0.5850,
     0.0025,
-    "Generator: ",
-    Misc
+    "Generator: "
   );
   MainInputsDiv.appendChild(GeneratorSliderObject.element)
 
-  const FcnForm = document.createElement("form")
-  MainInputsDiv.appendChild(FcnForm)
+  const FcnObject = Misc.makeNumberInput(
+    "ForwardChordNumber",
+    1,
+    0,
+    "Forward: "
+  );
+  MainInputsDiv.appendChild(FcnObject.element)
 
-  const ForwardChordNumber = document.createElement("input");
-  Misc.setAttributesByObject(ForwardChordNumber, {
-    "id": "ForwardChordNumber",
-    "type": "number",
-    "value": 1,
-    "min": 0
-  });
-
-  temp = document.createElement("label");
-  Misc.setAttributesByObject(temp, {
-    "for": ForwardChordNumber.id
-  });
-  temp.innerText = "Forward: "
-  FcnForm.appendChild(temp);
-
-  FcnForm.appendChild(ForwardChordNumber);
-
-  const BcnForm = document.createElement("form")
-  MainInputsDiv.appendChild(BcnForm)
-
-  const BackwardChordNumber = document.createElement("input");
-  Misc.setAttributesByObject(BackwardChordNumber, {
-    "id": "BackwardChordNumber",
-    "type": "number",
-    "value": 1,
-    "min": 0
-  });
-
-  temp = document.createElement("label");
-  Misc.setAttributesByObject(temp, {
-    "for": BackwardChordNumber.id
-  });
-  temp.innerText = "Backward: "
-  BcnForm.appendChild(temp);
-
-  BcnForm.appendChild(BackwardChordNumber);
+  const BcnObject = Misc.makeNumberInput(
+    "BackwardChordNumber",
+    1,
+    0,
+    "Backward: "
+  );
+  MainInputsDiv.appendChild(BcnObject.element)
 
   const ButtonsForm = document.createElement("form");
   MainInputsDiv.appendChild(ButtonsForm);
@@ -150,8 +85,8 @@ async function main(){
   // wrapping to make edit easy
   function confChord(){
     CanvasMod.configureChord(
-      parseInt(ForwardChordNumber.value),
-      parseInt(BackwardChordNumber.value),
+      FcnObject.get(),
+      BcnObject.get(),
       MarkerList,
       Misc.fractionPart
     );
@@ -160,22 +95,18 @@ async function main(){
 
   function refresh(event=null){
     CanvasMod.writeCanvas(
-      Number(GeneratorSliderObject.slider.value),
+      GeneratorSliderObject.get(),
       event
     );
   };
   refresh();
 
   window.onresize = (ev) => {
-    Misc.setAttributesByObject(GeneratorSliderObject.slider, {
-      "style": "width: " + String(window.innerWidth/2) + "px;"
-    });
+    GeneratorSliderObject.resize();
 
     MarkerList.forEach( (O) => {
       if(O.display){
-        Misc.setAttributesByObject(O.slider, {
-          "style": "width: " + String(window.innerWidth/2) + "px;"
-        });
+        O.resize();
       }
     });
 
@@ -187,7 +118,7 @@ async function main(){
 
   function confSounds(xco, yco){
     let tempList = CanvasMod.getLogFreqsByCoord(
-      Number(GeneratorSliderObject.slider.value),
+      GeneratorSliderObject.get(),
       xco,
       yco
     );
@@ -253,18 +184,16 @@ async function main(){
     delSounds();
   }
 
-  GeneratorSliderObject.slider.oninput = (ev) =>{
-    GeneratorSliderObject.changeVal();
-
+  GeneratorSliderObject.element.oninput = (ev) =>{
     refresh();
   };
  
-  ForwardChordNumber.onchange = (ev) =>{
+  FcnObject.element.oninput = (ev) =>{
     confChord();
     refresh();
   };
 
-  BackwardChordNumber.onchange = (ev) =>{
+  BcnObject.element.oninput = (ev) =>{
     confChord();
     refresh();
   };
@@ -278,14 +207,13 @@ async function main(){
     if(markerId === -1){ 
       markerId = MarkerList.length
 
-      let MarkerSliderObject = makeSliderObject(
+      let MarkerSliderObject = Misc.makeSliderObject(
         "MarkerSlider" + String(markerId),
         0,
         1,
         0.2500,
         0.0025,
-        "Marker" + String(markerId) + ": ",
-        Misc
+        "Marker" + String(markerId) + ": "
       ); 
 
       let DeleteMarkerButton = document.createElement("input");
@@ -299,17 +227,14 @@ async function main(){
       MarkerList.push(
         {
           display: true,
-          get: () => Number(MarkerSliderObject.slider.value),
-          slider: MarkerSliderObject.slider
+          get: () => MarkerSliderObject.get()
         }
       );
 
       confChord();
       refresh();
   
-      MarkerSliderObject.slider.oninput = (ev) =>{
-        MarkerSliderObject.changeVal();
-
+      MarkerSliderObject.element.oninput = (ev) =>{
         refresh();
       };
 
