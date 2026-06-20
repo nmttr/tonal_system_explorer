@@ -50,8 +50,8 @@ export function writeCanvas(gen, mouseMoveEvent=null){
   if(mouseMoveEvent!==null){
     // console.log(mouseMoveEvent);
 
-    const xco = mouseMoveEvent.clientX;
-    const yco = mouseMoveEvent.clientY;
+    const xco = mouseMoveEvent.offsetX;
+    const yco = mouseMoveEvent.offsetY;
 
     const indexNearMouse = Math.floor(division/window.innerHeight*yco)
 

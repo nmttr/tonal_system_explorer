@@ -249,7 +249,7 @@ async function main(){
   }
 
   MainCanvas.onmouseleave = (ev) => {
-    refresh(ev);
+    refresh();
     delSounds();
   }
 
