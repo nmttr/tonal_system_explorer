@@ -5,6 +5,38 @@ let context = null;
 let chordIdArray = null;
 let chordObject = null;
 
+export function getLogFreqsByCoord(gen, xco, yco){
+  const start = canvas.width/8
+  const end = canvas.width*7/8
+
+  const indexNearMouse = Math.floor(division/window.innerHeight*yco)
+
+  if(indexNearMouse>=chordIdArray.length) return [];
+
+  if(xco <= start || end <= xco){
+    return Array.from(
+      { length: chordObject[chordIdArray[indexNearMouse]].length },
+      (_, i) => chordObject[chordIdArray[indexNearMouse]][i].get(gen)
+    );
+  }else if(indexNearMouse < chordIdArray.length){
+    const logScale = (xco-start)/(end-start)
+    let left = 0
+    let minv = 1
+    let maxv = left
+
+    chordObject[chordIdArray[indexNearMouse]].forEach( (f) => {
+      let temp = f.get(gen)
+
+      if(left < temp && temp <= logScale){ left = temp }
+
+      if(temp < minv) { minv = temp }
+      if(maxv < temp) { maxv = temp }
+    });
+
+    return [(left < minv)?(maxv-1):left];
+  } 
+}
+
 export function writeCanvas(gen, mouseMoveEvent=null){
   canvas.width = window.innerWidth*3/4;
   canvas.height = window.innerHeight*chordIdArray.length/division;
@@ -27,7 +59,7 @@ export function writeCanvas(gen, mouseMoveEvent=null){
     context.fillStyle = `rgb(255,0,0,0.5)`;
 
     let temp = window.innerHeight*indexNearMouse/division
-    if(8*xco <= canvas.width || 7*canvas.width <= 8*xco){
+    if(xco <= start || end <= xco){
       context.fillRect(
         0, temp,
         canvas.width/8, window.innerHeight/division

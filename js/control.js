@@ -47,6 +47,8 @@ async function main(){
   // dynamic import for modules
   const Misc = await import("./misc.js");
   const CanvasMod = await import("./canvas.js");
+  const AudioMod = await import("./audio.js");
+  AudioMod.init();
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
@@ -180,8 +182,75 @@ async function main(){
     refresh();
   }
 
+  const soundList = new Array();
+  let baseFreq = 440.0
+
+  function confSounds(xco, yco){
+    let tempList = CanvasMod.getLogFreqsByCoord(
+      Number(GeneratorSliderObject.slider.value),
+      xco,
+      yco
+    );
+    tempList.sort();
+
+    if(soundList.length==0){        
+      Array.from(
+         { length: tempList.length },
+         (_, i) => AudioMod.getOsc(baseFreq*Math.pow(2, tempList[i]))
+      ).forEach( (sound) => {
+        soundList.push(sound);
+        sound.start();
+      });
+    }else{
+      let i=0;
+      while(i<soundList.length){
+        if(i<tempList.length){
+          soundList[i].changeFreq(baseFreq*Math.pow(2, tempList[i]));
+          i++;
+        }else{
+          soundList[i].stop();
+          soundList.splice(i,1);
+        }
+      }
+      while(i<tempList.length){
+        let temp = AudioMod.getOsc(baseFreq*Math.pow(2, tempList[i]));
+        soundList.push(temp);
+        temp.start();
+        i++;
+      }
+    }
+  }
+
+  function delSounds(){
+    soundList.forEach( (sound) => {
+      sound.stop();
+    });
+    while(soundList.length>0){
+      soundList.pop();
+    }
+  }
+
+  MainCanvas.onmousedown = (ev) => {
+    confSounds(ev.offsetX, ev.offsetY);
+  }
+
   MainCanvas.onmousemove = (ev) => {
     refresh(ev);
+
+    if(ev.buttons&1==1){
+      confSounds(ev.offsetX, ev.offsetY);
+    }else{
+      delSounds();
+    }
+  }
+
+  MainCanvas.onmouseup = (ev) => {
+    delSounds();
+  }
+
+  MainCanvas.onmouseleave = (ev) => {
+    refresh(ev);
+    delSounds();
   }
 
   GeneratorSliderObject.slider.oninput = (ev) =>{
