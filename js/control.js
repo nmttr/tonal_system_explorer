@@ -31,16 +31,6 @@ async function main(){
   HomeDiv.appendChild(MainInputsDiv);
   HomeDiv.appendChild(MarkersDiv);
 
-  const GeneratorSliderObject = Misc.makeSliderObject(
-    "GeneratorSlider",
-    0,
-    1,
-    0.5850,
-    0.0025,
-    "Generator: "
-  );
-  MainInputsDiv.appendChild(GeneratorSliderObject.element)
-
   const FcnObject = Misc.makeNumberInput(
     "ForwardChordNumber",
     1,
@@ -56,6 +46,24 @@ async function main(){
     "Backward: "
   );
   MainInputsDiv.appendChild(BcnObject.element)
+
+  const DivisionNumberObject = Misc.makeNumberInput(
+    "DivisionNumber",
+    12,
+    1,
+    "Division of Octave: "
+  );
+  MainInputsDiv.appendChild(DivisionNumberObject.element)
+
+  const GeneratorSliderObject = Misc.makeSliderObject(
+    "GeneratorSlider",
+    0,
+    DivisionNumberObject.get(),
+    7,
+    1,
+    "Generator: "
+  );
+  MainInputsDiv.appendChild(GeneratorSliderObject.element)
 
   const ButtonsForm = document.createElement("form");
   MainInputsDiv.appendChild(ButtonsForm);
@@ -105,9 +113,7 @@ async function main(){
     GeneratorSliderObject.resize();
 
     MarkerList.forEach( (O) => {
-      if(O.display){
-        O.resize();
-      }
+      O.resize();
     });
 
     refresh();
@@ -198,6 +204,18 @@ async function main(){
     refresh();
   };
 
+  DivisionNumberObject.element.oninput = (ev) => {
+    let temp = DivisionNumberObject.get();
+
+    GeneratorSliderObject.changeRange(temp);
+
+    MarkerList.forEach( (O) => {
+      O.changeRange(temp);
+    });
+
+    refresh();
+  };
+
   AddMarkerButton.onclick = (ev) => {
     let markerId = MarkerList.findIndex( 
       (elem) => elem.display === false
@@ -210,9 +228,9 @@ async function main(){
       let MarkerSliderObject = Misc.makeSliderObject(
         "MarkerSlider" + String(markerId),
         0,
+        DivisionNumberObject.get(),
+        Math.floor(DivisionNumberObject.get()/4),
         1,
-        0.2500,
-        0.0025,
         "Marker" + String(markerId) + ": "
       ); 
 
@@ -226,6 +244,7 @@ async function main(){
       MarkersDiv.appendChild(MarkerSliderObject.element);
       MarkerList.push(
         {
+          changeRange: MarkerSliderObject.changeRange,
           display: true,
           get: MarkerSliderObject.get,
           resize: MarkerSliderObject.resize

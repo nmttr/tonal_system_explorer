@@ -36,15 +36,26 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   setAttributesByObject(afterLabel, {
     "for": slider.id
   });
-  afterLabel.innerText = slider.value;
+  // in percentage
+  afterLabel.innerText = slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
   form.appendChild(afterLabel);
-  
-  slider.oninput = () => {
-    afterLabel.innerText = slider.value;
-  }
 
   let gv = () => {
-    return Number(slider.value);
+    return slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
+  }
+
+  let cr = (newmax, newmin=0) => {
+    let temp = gv();
+    let newdefval = Math.floor(temp*(newmax - newmin));
+
+    setAttributesByObject(slider, 
+      {
+        "min": newmin,
+        "max": newmax
+      }
+    );
+    slider.value = newdefval;
+    afterLabel.innerText = gv();
   }
 
   let rsz = () => {
@@ -52,7 +63,14 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
       "style": "width: " + String(window.innerWidth/2) + "px;"
     });
   }
-  return {element: form, get: gv, resize: rsz};
+
+  slider.oninput = () => {
+    afterLabel.innerText = gv();
+  }
+
+  form.onsubmit = (ev) => { ev.preventDefault(); }
+
+  return {changeRange: cr, element: form, get: gv, resize: rsz};
 }
 
 export function makeNumberInput(numberId, defval, minval, label){
@@ -78,6 +96,9 @@ export function makeNumberInput(numberId, defval, minval, label){
   let gv = () => {
     return parseInt(numberInput.value);
   }
+
+  form.onsubmit = (ev) => { ev.preventDefault(); }
+
   return {element: form, get: gv}
 }
 
