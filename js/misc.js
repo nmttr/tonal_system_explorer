@@ -21,6 +21,11 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   );
   slider.value = value;
 
+  // defining here to refer later
+  let gv = () => {
+    return slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
+  }
+
   // before slider append label for it
   let beforeLabel = document.createElement("label");
   setAttributesByObject(beforeLabel, {
@@ -37,12 +42,8 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
     "for": slider.id
   });
   // in percentage
-  afterLabel.innerText = slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
+  afterLabel.innerText = gv().toFixed(5);
   form.appendChild(afterLabel);
-
-  let gv = () => {
-    return slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
-  }
 
   let cr = (newmax, newmin=0) => {
     let temp = gv();
@@ -55,7 +56,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
       }
     );
     slider.value = newdefval;
-    afterLabel.innerText = gv();
+    afterLabel.innerText = gv().toFixed(5);
   }
 
   let rsz = () => {
@@ -65,7 +66,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   }
 
   slider.oninput = () => {
-    afterLabel.innerText = gv();
+    afterLabel.innerText = gv().toFixed(5);
   }
 
   form.onsubmit = (ev) => { ev.preventDefault(); }
