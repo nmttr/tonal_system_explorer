@@ -45,7 +45,21 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   afterLabel.innerText = gv().toFixed(5);
   form.appendChild(afterLabel);
 
-  let cr = (newmax, newmin=0) => {
+  let minusButton = document.createElement("input");
+  setAttributesByObject(minusButton, {
+    "type": "button",
+    "value": "-" + String(slider.step)
+  });
+  form.appendChild(minusButton);
+
+  let plusButton = document.createElement("input");
+  setAttributesByObject(plusButton, {
+    "type": "button",
+    "value": "+" + String(slider.step)
+  });
+  form.appendChild(plusButton);
+
+  let cr = (newmax, newmin=0, preventInput=true) => {
     let temp = gv();
     let newdefval = Math.floor(temp*(newmax - newmin));
 
@@ -56,7 +70,11 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
       }
     );
     slider.value = newdefval;
-    afterLabel.innerText = gv().toFixed(5);
+    if(preventInput){
+      afterLabel.innerText = gv().toFixed(5);
+    }else{
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   }
 
   let rsz = () => {
@@ -69,7 +87,15 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
     afterLabel.innerText = gv().toFixed(5);
   }
 
-  form.onsubmit = (ev) => { ev.preventDefault(); }
+  plusButton.onclick = () => {
+    slider.value = slider.valueAsNumber + Number(slider.step);
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  minusButton.onclick = () => {
+    slider.value = slider.valueAsNumber - Number(slider.step);
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 
   return {changeRange: cr, element: form, get: gv, resize: rsz};
 }
