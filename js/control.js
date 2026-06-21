@@ -9,6 +9,9 @@ async function main(){
   const CanvasMod = await import("./canvas.js");
   const AudioMod = await import("./audio.js");
   await AudioMod.init();
+  if(navigator.audioSession){
+    navigator.audioSession.type = "playback";
+  }
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
