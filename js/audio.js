@@ -22,7 +22,7 @@ export function getOsc(freq, type='triangle'){
     let now2 = context.currentTime
     gainNode.gain.cancelScheduledValues(now2);
     gainNode.gain.setValueAtTime(0.0, now2);
-    gainNode.gain.linearRampToValueAtTime(1.0, now2 + 0.05);
+    gainNode.gain.linearRampToValueAtTime(0.9, now2 + 0.05);
 
     osc.start();
     isPlaying = true;
@@ -55,10 +55,12 @@ export function getOsc(freq, type='triangle'){
   return {start: start, changeFreq: changeFreq, stop: stop}
 }
 
-export function init(){
+export async function init(){
   if(!context){
-    context = new window.AudioContext();
+    context = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
+  if(!compressor){
     compressor = context.createDynamicsCompressor();
 
     let now = context.currentTime;
@@ -70,5 +72,10 @@ export function init(){
     compressor.release.setValueAtTime(0.25, now);
 
     compressor.connect(context.destination);
+  }
+
+  if(context.state === 'suspended'){ 
+    context.resume();
+    console.log("end");
   }
 }

@@ -8,7 +8,7 @@ async function main(){
   const Misc = await import("./misc.js");
   const CanvasMod = await import("./canvas.js");
   const AudioMod = await import("./audio.js");
-  AudioMod.init();
+  await AudioMod.init();
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
@@ -82,7 +82,8 @@ async function main(){
   // make canvas
   const MainCanvas = document.createElement("canvas");
   Misc.setAttributesByObject(MainCanvas, {
-    "id": "MainCanvas"
+    "id": "MainCanvas",
+    "style": "-webkit-user-select: none; user-select: none; touch-action: none;"
   });
   MainCanvas.innerText = "no canvas element!"
   MainVisualsDiv.appendChild(MainCanvas);
@@ -171,11 +172,15 @@ async function main(){
     beforeLogFreqsList = new Array();
   }
 
-  MainCanvas.onmousedown = (ev) => {
+  MainCanvas.onpointerdown = (ev) => {
+    ev.preventDefault();
+    refresh(ev);
     confSounds(ev.offsetX, ev.offsetY);
   }
 
-  MainCanvas.onmousemove = (ev) => {
+  MainCanvas.addEventListener("pointermove", (ev) => {
+    ev.preventDefault();
+
     refresh(ev);
 
     if(ev.buttons&1==1){
@@ -183,15 +188,22 @@ async function main(){
     }else{
       delSounds();
     }
-  }
+  }, { passive: false });
 
-  MainCanvas.onmouseup = (ev) => {
+  MainCanvas.onpointerup = (ev) => {
+    ev.preventDefault();
+    refresh(ev);
     delSounds();
   }
 
-  MainCanvas.onmouseleave = (ev) => {
+  MainCanvas.onpointerleave = (ev) => {
+    ev.preventDefault();
     refresh();
     delSounds();
+  }
+
+  MainCanvas.oncontextmenu = (ev) => {
+    ev.preventDefault();
   }
 
   GeneratorSliderObject.element.oninput = (ev) =>{
