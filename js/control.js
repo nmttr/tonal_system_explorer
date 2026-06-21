@@ -119,15 +119,17 @@ async function main(){
     refresh();
   }
 
-  const soundList = new Array();
   let baseFreq = 440.0
 
+  const soundList = new Array();
+  let beforeLogFreqsList = new Array();
   function confSounds(xco, yco){
     let tempList = CanvasMod.getLogFreqsByCoord(
       GeneratorSliderObject.get(),
       xco,
       yco
     );
+    // console.log([tempList, beforeLogFreqsList]);
     tempList.sort();
 
     if(soundList.length==0){        
@@ -138,22 +140,23 @@ async function main(){
         soundList.push(sound);
         sound.start();
       });
+
+      beforeLogFreqsList = tempList;
     }else{
-      let i=0;
-      while(i<soundList.length){
-        if(i<tempList.length){
-          soundList[i].changeFreq(baseFreq*Math.pow(2, tempList[i]));
-          i++;
-        }else{
-          soundList[i].stop();
-          soundList.splice(i,1);
+      let flag = false;
+      if(beforeLogFreqsList.length != tempList.length){
+        flag = true;
+      }else{
+        for(let j=0; j<tempList.length; j++){
+          if(beforeLogFreqsList[j]!=tempList[j]){
+            flag = true;
+            break;
+          }
         }
       }
-      while(i<tempList.length){
-        let temp = AudioMod.getOsc(baseFreq*Math.pow(2, tempList[i]));
-        soundList.push(temp);
-        temp.start();
-        i++;
+      if(flag){
+        delSounds();
+        confSounds(xco, yco);
       }
     }
   }
@@ -165,6 +168,7 @@ async function main(){
     while(soundList.length>0){
       soundList.pop();
     }
+    beforeLogFreqsList = new Array();
   }
 
   MainCanvas.onmousedown = (ev) => {

@@ -5,8 +5,11 @@ export function getOsc(freq, type='triangle'){
   const osc = context.createOscillator();
   const gainNode = context.createGain();
 
+  let now1 = context.currentTime;
+
   osc.type = 'triangle';
-  osc.frequency.setValueAtTime(freq, context.currentTime);
+  osc.frequency.setValueAtTime(freq, now1);
+  gainNode.gain.setValueAtTime(0.0, now1);
 
   osc.connect(gainNode);
   gainNode.connect(compressor);
@@ -15,6 +18,11 @@ export function getOsc(freq, type='triangle'){
 
   let start = () => {
     if(isPlaying) return;
+
+    let now2 = context.currentTime
+    gainNode.gain.cancelScheduledValues(now2);
+    gainNode.gain.setValueAtTime(0.0, now2);
+    gainNode.gain.linearRampToValueAtTime(1.0, now2 + 0.05);
 
     osc.start();
     isPlaying = true;
@@ -29,13 +37,13 @@ export function getOsc(freq, type='triangle'){
   let stop = () => {
     if(!isPlaying) return;
 
-    let now = context.currentTime;
+    let now3 = context.currentTime;
 
-    gainNode.gain.cancelScheduledValues(now);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
+    gainNode.gain.cancelScheduledValues(now3);
+    gainNode.gain.setValueAtTime(gainNode.gain.value, now3);
+    gainNode.gain.linearRampToValueAtTime(0, now3 + 0.15);
 
-    osc.stop(now + 0.15);
+    osc.stop(now3 + 0.15);
     isPlaying = false;
   }
 
