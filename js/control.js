@@ -9,9 +9,6 @@ async function main(){
   const CanvasMod = await import("./canvas.js");
   const AudioMod = await import("./audio.js");
   await AudioMod.init();
-  if(navigator.audioSession){
-    navigator.audioSession.type = "playback";
-  }
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
@@ -112,6 +109,16 @@ async function main(){
     );
   };
   refresh();
+
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){
+      AudioMod.suspend();
+      // console.log("suspended");
+    }else{
+      AudioMod.resume();
+      // console.log("resumed");
+    }
+  });
 
   window.onresize = (ev) => {
     GeneratorSliderObject.resize();

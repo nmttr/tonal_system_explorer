@@ -55,7 +55,23 @@ export function getOsc(freq, type='triangle'){
   return {start: start, changeFreq: changeFreq, stop: stop}
 }
 
+export function suspend(){
+  if(context.state === 'running'){
+    context.suspend();
+  }
+}
+
+export function resume(){
+  if(context.state !== 'running'){
+    context.resume();
+  }
+}
+
 export async function init(){
+  if(navigator.audioSession){
+    navigator.audioSession.type = "transient";
+  }
+
   if(!context){
     context = new (window.AudioContext || window.webkitAudioContext)();
   }
@@ -74,8 +90,6 @@ export async function init(){
     compressor.connect(context.destination);
   }
 
-  if(context.state === 'suspended'){ 
-    context.resume();
-    console.log("end");
-  }
+  resume();
+  // console.log(context);
 }
