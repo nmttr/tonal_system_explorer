@@ -67,6 +67,10 @@ export function resume(){
   }
 }
 
+export function contextState(){
+  return context.state
+}
+
 export async function init(){
   if(navigator.audioSession){
     navigator.audioSession.type = "transient";

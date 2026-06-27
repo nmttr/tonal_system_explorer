@@ -22,8 +22,8 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   slider.value = value;
 
   // defining here to refer later
-  let gv = () => {
-    return slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
+  let gv = (isRaw=false) => {
+    return isRaw?slider.valueAsNumber:slider.valueAsNumber/(Number(slider.max) - Number(slider.min));
   }
 
   // before slider append label for it
@@ -42,7 +42,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
     "for": slider.id
   });
   // in percentage
-  afterLabel.innerText = gv().toFixed(5);
+  afterLabel.innerText = gv(true) + " : " + gv().toFixed(5);
   form.appendChild(afterLabel);
 
   let minusButton = document.createElement("input");
@@ -71,7 +71,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
     );
     slider.value = newdefval;
     if(preventInput){
-      afterLabel.innerText = gv().toFixed(5);
+      afterLabel.innerText = gv(true) + " : " + gv().toFixed(5);
     }else{
       slider.dispatchEvent(new Event('input', { bubbles: true }));
     }
@@ -84,7 +84,7 @@ export function makeSliderObject(sliderId, min, max, value, step, label){
   }
 
   slider.oninput = () => {
-    afterLabel.innerText = gv().toFixed(5);
+    afterLabel.innerText = gv(true) + " : " + gv().toFixed(5);
   }
 
   plusButton.onclick = () => {
@@ -127,8 +127,4 @@ export function makeNumberInput(numberId, defval, minval, label){
   form.onsubmit = (ev) => { ev.preventDefault(); }
 
   return {element: form, get: gv}
-}
-
-export function fractionPart(num){
-  return num-Math.floor(num)
 }

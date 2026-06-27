@@ -12,6 +12,8 @@ async function main(){
 
   const HomeDiv = document.getElementById("HomeForControl.js");
 
+  const StatusDiv = document.createElement("div");
+
   const MainVisualsDiv = document.createElement("div");
   Misc.setAttributesByObject(MainVisualsDiv, {
    "id": "MainVisuals"
@@ -27,9 +29,29 @@ async function main(){
     "id": "Markers"
   });
   
+  HomeDiv.appendChild(StatusDiv);
   HomeDiv.appendChild(MainVisualsDiv);
   HomeDiv.appendChild(MainInputsDiv);
   HomeDiv.appendChild(MarkersDiv);
+
+  const ChordStatusDiv = document.createElement("div");
+  Misc.setAttributesByObject(ChordStatusDiv, {
+    "id": "ChordStatus"
+  });
+  ChordStatusDiv.innerText = "chord: not focused";
+  StatusDiv.appendChild(ChordStatusDiv);
+
+  const ParameterStatusDiv = document.createElement("div");
+  Misc.setAttributesByObject(ParameterStatusDiv, {
+    "id": "ParameterStatus"
+  });
+  StatusDiv.appendChild(ParameterStatusDiv);
+
+  const AudioStatusDiv = document.createElement("div");
+  Misc.setAttributesByObject(AudioStatusDiv, {
+    "id": "SystemStatus"
+  });
+  StatusDiv.appendChild(AudioStatusDiv);
 
   const FcnObject = Misc.makeNumberInput(
     "ForwardChordNumber",
@@ -96,8 +118,8 @@ async function main(){
     CanvasMod.configureChord(
       FcnObject.get(),
       BcnObject.get(),
-      MarkerList,
-      Misc.fractionPart
+      DivisionNumberObject.get(),
+      MarkerList
     );
   }
   confChord();
@@ -118,6 +140,8 @@ async function main(){
       AudioMod.resume();
       // console.log("resumed");
     }
+    changeParameterStatus();
+    changeAudioStatus();
   });
 
   window.onresize = (ev) => {
@@ -137,6 +161,8 @@ async function main(){
   function confSounds(xco, yco){
     let tempList = CanvasMod.getLogFreqsByCoord(
       GeneratorSliderObject.get(),
+      GeneratorSliderObject.get(true),
+      DivisionNumberObject.get(),
       xco,
       yco
     );
@@ -146,7 +172,7 @@ async function main(){
     if(soundList.length==0){        
       Array.from(
          { length: tempList.length },
-         (_, i) => AudioMod.getOsc(baseFreq*Math.pow(2, tempList[i]))
+         (_, i) => AudioMod.getOsc(baseFreq*Math.pow(2, tempList[i][0]))
       ).forEach( (sound) => {
         soundList.push(sound);
         sound.start();
@@ -159,7 +185,8 @@ async function main(){
         flag = true;
       }else{
         for(let j=0; j<tempList.length; j++){
-          if(beforeLogFreqsList[j]!=tempList[j]){
+          if(beforeLogFreqsList[j][0]!=tempList[j][0]
+            && beforeLogFreqsList[j][1]!=tempList[j][1]){
             flag = true;
             break;
           }
@@ -182,10 +209,52 @@ async function main(){
     beforeLogFreqsList = new Array();
   }
 
+  function changeChordStatus(){
+    let result = "chord: ";
+    if(beforeLogFreqsList.length===0){
+      result += "not focused";
+    }else{
+      result += "[ ";
+      beforeLogFreqsList.forEach( (logFreq, index) => {
+        result += index===0?"":", ";
+        result += String(logFreq[1]) + " : " + logFreq[0].toFixed(5);
+      });
+      result += " ]";
+    }
+    ChordStatusDiv.innerText = result
+  }
+
+  function changeParameterStatus(){
+    let result = [
+      FcnObject.get(), 
+      BcnObject.get(), 
+      DivisionNumberObject.get(),
+      GeneratorSliderObject.get(true)
+    ];
+    let temp = [];
+    MarkerList.forEach( (O) => {
+      if(O.display) temp.push(O.get(true));
+    });
+    result.push(temp);
+    ParameterStatusDiv.innerText = "Parameter: " + JSON.stringify(result)
+  }
+  changeParameterStatus();
+
+  function changeAudioStatus(){
+    AudioStatusDiv.innerText = "audioContext: " + AudioMod.contextState();
+    if(navigator.audioSession){
+      AudioStatusDiv.innerText += 
+        ", AudioSessionType: " + navigator.audioSession.type
+    }
+  }
+  changeAudioStatus();
+
   MainCanvas.onpointerdown = (ev) => {
     ev.preventDefault();
     refresh(ev);
     confSounds(ev.offsetX, ev.offsetY);
+    changeChordStatus();
+    changeAudioStatus();
   }
 
   MainCanvas.addEventListener("pointermove", (ev) => {
@@ -198,18 +267,24 @@ async function main(){
     }else{
       delSounds();
     }
+    changeChordStatus();
+    changeAudioStatus();
   }, { passive: false });
 
   MainCanvas.onpointerup = (ev) => {
     ev.preventDefault();
     refresh(ev);
     delSounds();
+    changeChordStatus();
+    changeAudioStatus();
   }
 
   MainCanvas.onpointerleave = (ev) => {
     ev.preventDefault();
     refresh();
     delSounds();
+    changeChordStatus();
+    changeAudioStatus();
   }
 
   MainCanvas.oncontextmenu = (ev) => {
@@ -218,16 +293,19 @@ async function main(){
 
   GeneratorSliderObject.element.oninput = (ev) =>{
     refresh();
+    changeParameterStatus();
   };
  
   FcnObject.element.oninput = (ev) =>{
     confChord();
     refresh();
+    changeParameterStatus();
   };
 
   BcnObject.element.oninput = (ev) =>{
     confChord();
     refresh();
+    changeParameterStatus();
   };
 
   DivisionNumberObject.element.oninput = (ev) => {
@@ -240,6 +318,7 @@ async function main(){
     });
 
     refresh();
+    changeParameterStatus();
   };
 
   AddMarkerButton.onclick = (ev) => {
@@ -279,9 +358,11 @@ async function main(){
 
       confChord();
       refresh();
+      changeParameterStatus();
   
       MarkerSliderObject.element.oninput = (ev) =>{
         refresh();
+        changeParameterStatus();
       };
 
       DeleteMarkerButton.onclick = (ev) => {
@@ -291,6 +372,7 @@ async function main(){
 
         confChord();
         refresh();
+        changeParameterStatus();
       };
     }else{
       MarkerList[markerId].display = true
@@ -298,6 +380,7 @@ async function main(){
 
       confChord();
       refresh();
+      changeParameterStatus();
     }
 
     // console.log(MarkerList)

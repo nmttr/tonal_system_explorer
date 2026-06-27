@@ -5,7 +5,7 @@ let context = null;
 let chordIdArray = null;
 let chordObject = null;
 
-export function getLogFreqsByCoord(gen, xco, yco){
+export function getLogFreqsByCoord(gen, genint, dn, xco, yco){
   const start = canvas.width/8
   const end = canvas.width*7/8
 
@@ -16,24 +16,37 @@ export function getLogFreqsByCoord(gen, xco, yco){
   if(xco <= start || end <= xco){
     return Array.from(
       { length: chordObject[chordIdArray[indexNearMouse]].length },
-      (_, i) => chordObject[chordIdArray[indexNearMouse]][i].get(gen)
+      (_, i) => [
+        chordObject[chordIdArray[indexNearMouse]][i].get(gen),
+        chordObject[chordIdArray[indexNearMouse]][i].getint(genint)
+      ]
     );
   }else if(indexNearMouse < chordIdArray.length){
     const logScale = (xco-start)/(end-start)
     let left = 0
+    let leftint = 0
     let minv = 1
     let maxv = left
+    let maxvint = leftint
 
     chordObject[chordIdArray[indexNearMouse]].forEach( (f) => {
       let temp = f.get(gen)
+      let tempint = f.getint(genint)
 
-      if(left < temp && temp <= logScale){ left = temp }
+      if(left < temp && temp <= logScale){ 
+        left = temp;
+        leftint = tempint;
+      }
 
-      if(temp < minv) { minv = temp }
-      if(maxv < temp) { maxv = temp }
+      if(temp < minv) { minv = temp; }
+      if(maxv < temp) { 
+        maxv = temp;
+        maxvint = tempint;
+      }
     });
 
-    return [(left < minv)?(maxv-1):left];
+    // console.log([gen, genint, left, leftint])
+    return [(left < minv)?[maxv-1, maxvint-dn]:[left, leftint]];
   } 
 }
 
@@ -148,7 +161,14 @@ export function writeCanvas(gen, mouseMoveEvent=null){
   context.restore()
 }
 
-export function configureChord(fn, bn, ml, frp){
+export function configureChord(fn, bn, dn, ml){
+  function frp(num){
+    return num-Math.floor(num)
+  }
+  function dvd(num){
+    return num>=0?num%dn:(dn+num%dn)
+  }
+
   let cAr = Array.from(
     {length: fn + bn + 2},
     (_, i) => i - bn - 1
@@ -160,15 +180,18 @@ export function configureChord(fn, bn, ml, frp){
     cOb[i] = [
       {
         name: i,
-        get: (g) => frp( i*g )
+        get: (g) => frp( i*g ),
+        getint: (n) => dvd( i*n )
       }, 
       {
         name: i+1,
-        get: (g) => frp( (i+1)*g )
+        get: (g) => frp( (i+1)*g ),
+        getint: (n) => dvd( (i+1)*n )
       },
       {
         name: i+cAr.length,
-        get: (g) => frp( (i+cAr.length)*g )
+        get: (g) => frp( (i+cAr.length)*g ),
+        getint: (n) => dvd( (i+cAr.length)*n )
       }
     ];
 
@@ -178,7 +201,8 @@ export function configureChord(fn, bn, ml, frp){
         cOb[i].push(
           {
             name: "M" + String(j),
-            get: (g) => { return frp( i*g + elem.get() ) }
+            get: (g) => frp( i*g + elem.get() ),
+            getint: (n) => dvd( i*n + elem.get(true) )
           }
         );
       }
