@@ -87,6 +87,22 @@ async function main(){
   );
   MainInputsDiv.appendChild(GeneratorSliderObject.element)
 
+  const GridNumberObject = Misc.makeNumberInput(
+    "GridDivisionNumber",
+    12,
+    1,
+    "Grid Div: "
+  );
+
+  let showGrid = false;
+  const ShowGridButton = document.createElement("input");
+  Misc.setAttributesByObject(ShowGridButton, {
+    "type": "button",
+    "value": "show"
+  });
+  GridNumberObject.element.appendChild(ShowGridButton);
+  MainInputsDiv.appendChild(GridNumberObject.element);
+
   const ButtonsForm = document.createElement("form");
   MarkersDiv.appendChild(ButtonsForm);
 
@@ -127,6 +143,8 @@ async function main(){
   function refresh(event=null){
     CanvasMod.writeCanvas(
       GeneratorSliderObject.get(),
+      GridNumberObject.get(),
+      showGrid,
       event
     );
   };
@@ -321,6 +339,21 @@ async function main(){
     changeParameterStatus();
   };
 
+  GridNumberObject.element.oninput = (ev) => {
+    refresh();
+  }
+
+  ShowGridButton.onclick = (ev) => {
+    if(showGrid){
+      showGrid = false;
+      ShowGridButton.value = "show"
+    }else{
+      showGrid = true;
+      ShowGridButton.value = "hide"
+    }
+    refresh();
+  }
+	
   AddMarkerButton.onclick = (ev) => {
     let markerId = MarkerList.findIndex( 
       (elem) => elem.display === false

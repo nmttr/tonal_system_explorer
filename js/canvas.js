@@ -50,7 +50,7 @@ export function getLogFreqsByCoord(gen, genint, dn, xco, yco){
   } 
 }
 
-export function writeCanvas(gen, mouseMoveEvent=null){
+export function writeCanvas(gen, grid, showGrid, mouseMoveEvent=null){
   canvas.width = window.innerWidth*3/4;
   canvas.height = window.innerHeight*chordIdArray.length/division;
 
@@ -69,7 +69,7 @@ export function writeCanvas(gen, mouseMoveEvent=null){
     const indexNearMouse = Math.floor(division/window.innerHeight*yco)
 
     context.save();
-    context.fillStyle = `rgb(255,0,0,0.5)`;
+    context.fillStyle = "rgb(255 0 0 / 50%)";
 
     let temp = window.innerHeight*indexNearMouse/division
     if(xco <= start || end <= xco){
@@ -135,9 +135,24 @@ export function writeCanvas(gen, mouseMoveEvent=null){
   context.closePath();
   context.stroke();
 
+  if(showGrid){
+    context.save();
+    context.strokeStyle = "rgb(0 0 255 / 25%)";
+    for(let i=1; i<grid; i++){
+      let temp = start+delta*i/grid;
+
+      context.beginPath();
+      context.moveTo(temp, 0);
+      context.lineTo(temp, canvas.height);
+      context.closePath();
+      context.stroke();
+    }
+    context.restore();
+  }
+
   context.save()
   context.font = "20px serif";
-  context.strokeStyle = `rgba(0 0 0 / 0.25)`
+  context.strokeStyle = "rgb(0 0 0 / 25%)";
 
   for(let i=0; i<chordIdArray.length; i++){
     // writePointsOfChordId(gen, i, chordIdArray[i], chordObject[chordIdArray[i]]);
