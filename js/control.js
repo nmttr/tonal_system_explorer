@@ -335,6 +335,7 @@ async function main(){
       O.changeRange(temp);
     });
 
+    confChord();
     refresh();
     changeParameterStatus();
   };
