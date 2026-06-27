@@ -30,8 +30,8 @@ async function main(){
   });
   
   HomeDiv.appendChild(StatusDiv);
-  HomeDiv.appendChild(MainVisualsDiv);
   HomeDiv.appendChild(MainInputsDiv);
+  HomeDiv.appendChild(MainVisualsDiv);
   HomeDiv.appendChild(MarkersDiv);
 
   const ChordStatusDiv = document.createElement("div");
@@ -88,7 +88,7 @@ async function main(){
   MainInputsDiv.appendChild(GeneratorSliderObject.element)
 
   const ButtonsForm = document.createElement("form");
-  MainInputsDiv.appendChild(ButtonsForm);
+  MarkersDiv.appendChild(ButtonsForm);
 
   // make AddMarkerButton
   const AddMarkerButton = document.createElement("input");
