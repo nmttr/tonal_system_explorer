@@ -249,13 +249,13 @@ async function main(){
   }
   changeAudioStatus();
 
-  MainCanvas.onpointerdown = (ev) => {
+  MainCanvas.addEventListener("pointerdown", (ev) => {
     ev.preventDefault();
     refresh(ev);
     confSounds(ev.offsetX, ev.offsetY);
     changeChordStatus();
     changeAudioStatus();
-  }
+  }, { passive: false });
 
   MainCanvas.addEventListener("pointermove", (ev) => {
     ev.preventDefault();
@@ -271,25 +271,25 @@ async function main(){
     changeAudioStatus();
   }, { passive: false });
 
-  MainCanvas.onpointerup = (ev) => {
+  MainCanvas.addEventListener("pointerup", (ev) => {
     ev.preventDefault();
     refresh(ev);
     delSounds();
     changeChordStatus();
     changeAudioStatus();
-  }
+  }, { passive: false });
 
-  MainCanvas.onpointerleave = (ev) => {
+  MainCanvas.addEventListener("pointerleave", (ev) => {
     ev.preventDefault();
     refresh();
     delSounds();
     changeChordStatus();
     changeAudioStatus();
-  }
+  }, { passive: false });
 
-  MainCanvas.oncontextmenu = (ev) => {
+  MainCanvas.addEventListener("contextmenu", (ev) => {
     ev.preventDefault();
-  }
+  }, { passive: false });
 
   GeneratorSliderObject.element.oninput = (ev) =>{
     refresh();
